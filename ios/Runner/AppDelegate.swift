@@ -1,6 +1,5 @@
-import Flutter
 import UIKit
-
+import Flutter
 @main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
@@ -8,6 +7,8 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+      // 配置后台任务
+      
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

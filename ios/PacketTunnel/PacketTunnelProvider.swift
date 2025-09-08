@@ -2,17 +2,23 @@
 //  PacketTunnelProvider.swift
 //  PacketTunnel
 //
-//  Created by 🧊 on 2025/9/6.
+//  Created by noo6 on 2024/7/13.
 //
 
 import NetworkExtension
 import ClashKit
+import Tun2SocksKit
+import Yaml
 
 class PacketTunnelProvider: NEPacketTunnelProvider {
     private var trafficTotalUp: Int64 = 0
     private var trafficTotalDown: Int64 = 0
     private var trafficUp: Int64 = 0
     private var trafficDown: Int64 = 0
+    private var appliedCfg: String? = nil
+    private var vpnIP: String? = nil
+    
+    private var userDefaults: UserDefaults? = nil
     
     private lazy var client = AppClashClient { trafficUp, trafficDown in
         self.trafficTotalUp += trafficUp
@@ -22,19 +28,44 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     }
     
     override func startTunnel(options: [String : NSObject]?) async throws {
+        let exIdentifier = Bundle.main.infoDictionary?["CFBundleIdentifier"] as! String
+        let identifier = exIdentifier.replacingOccurrences(of: ".PacketTunnel", with: "")
+        let suiteName = "group.\(identifier)"
+        self.userDefaults = UserDefaults(suiteName: suiteName)!
+        
+        let allowStartFromIOSSettings = userDefaults!.bool(forKey: "clash_flt_allowStartFromIOSSettings")
+        
+        let startFromIOSSettings = (options?["startFromApp"] as? Bool) != true
+        if(startFromIOSSettings && !allowStartFromIOSSettings){
+            throw MyError.runtimeError("Preventing tunnel start, allowStartFromIOSSettings is false")
+        }
         let isSetup = setupClash()
         if (!isSetup) {
             throw MyError.runtimeError("Clash Setup failed")
         }
         let generalJson = String(data: ClashKit.ClashGetConfigGeneral()!, encoding: .utf8)
         let general = jsonToDictionary(generalJson)
-        osLog("startTunnel with config: \(String(describing: (generalJson)))")
+        osLog("Clash started with config: \(String(describing: (generalJson)))")
         let port = general?["port"] as? Int ?? 7890
+        let socksPort = general?["socks-port"] as? Int ?? 7891
         let host = "127.0.0.1"
         try await self.setTunnelNetworkSettings(initTunnelSettings(proxyHost: host, proxyPort: port))
+        
+        // start TUN
+        Task.init {
+            let tunConfigFile = saveTunnelConfigToFile(socksPort: socksPort)
+            do {
+                let tunConfig = try String(contentsOf: tunConfigFile, encoding: .utf8)
+                osLog("tunConfig: \(tunConfig)")
+            }catch{
+                fatalError("cannot read tunConfigFile")
+            }
+            osLog("Socks5Tunnel.run: \(Socks5Tunnel.run(withConfig: Socks5Tunnel.Config.file(path: tunConfigFile)))")
+        }
     }
     
     override func stopTunnel(with reason: NEProviderStopReason) async {
+        Socks5Tunnel.quit()
     }
     
     override func handleAppMessage(_ messageData: Data) async -> Data? {
@@ -54,10 +85,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     }
     
     private func setupClash() -> Bool {
-        let exIdentifier = Bundle.main.infoDictionary?["CFBundleIdentifier"] as! String
-        let identifier = exIdentifier.replacingOccurrences(of: ".PacketTunnel", with: "")
-        let suiteName = "group.\(identifier)"
-        let userDefaults = UserDefaults(suiteName: suiteName)!
+        let userDefaults = self.userDefaults!
         let clashHome = userDefaults.string(forKey: "clash_flt_clashHome")
         let clashHomeUrl = resolvePath(clashHome, isDir: true)
         let profilePath = userDefaults.string(forKey: "clash_flt_profilePath")
@@ -89,48 +117,53 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         }
         let configOverride = """
         \(config!)
-        allow-lan: false
+        allow-lan: true
+        ipv6: true
         """
-        ClashKit.ClashSetup(clashHomeUrl!.path, configOverride, client)
-        let data = ClashKit.ClashGetConfigGeneral()
+        if (appliedCfg != configOverride) {
+            osLog("config changed, calling ClashKit.ClashSetup.")
+            ClashKit.ClashSetup(clashHomeUrl!.path, configOverride, client)
+            appliedCfg = configOverride
+            do {
+                let yaml = try Yaml.load(configOverride)
+                let proxiesdic = yaml["proxies"].array?.first
+                vpnIP = proxiesdic?["server"].string
+            } catch {
+                print("Error parsing YAML: \(error)")
+            }
+        } else {
+            osLog("config no changes, skip ClashKit.ClashSetup.")
+        }
         let map = [groupName! : proxyName!]
         let json = dictionaryToJson(dic: map)
         ClashKit.ClashPatchSelector(json?.data(using: .utf8))
-        return data != nil
+        return true
     }
     
     private func initTunnelSettings(proxyHost: String, proxyPort: Int) -> NEPacketTunnelNetworkSettings {
-        let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "254.1.1.1")
-        settings.mtu = 1440
-        
-        /* proxy settings */
-        let proxySettings = NEProxySettings()
-        proxySettings.httpServer = NEProxyServer(
-            address: proxyHost,
-            port: proxyPort
-        )
-        proxySettings.httpsServer = NEProxyServer(
-            address: proxyHost,
-            port: proxyPort
-        )
-        proxySettings.httpEnabled = true
-        proxySettings.httpsEnabled = true
-        proxySettings.exceptionList = [
-            "192.168.0.0/16",
-            "10.0.0.0/8",
-            "172.16.0.0/12",
-            "127.0.0.1",
-            "localhost",
-            "*.local"
-        ]
-        proxySettings.matchDomains = [""]
-        
-        let ipv4Settings = NEIPv4Settings(
-            addresses: ["198.18.0.1", "0.0.0.0"],
-            subnetMasks: ["255.255.0.0"]
-        )
-        settings.ipv4Settings = ipv4Settings
-        settings.proxySettings = proxySettings
+        let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: vpnIP ?? "254.1.1.1")
+        settings.mtu = 9000
+//        settings.ipv4Settings = {
+//            let settings = NEIPv4Settings(addresses: ["198.18.0.1"], subnetMasks: ["255.255.0.0"])
+//            settings.includedRoutes = [NEIPv4Route.default()]
+//            return settings
+//        }()
+//        settings.ipv6Settings = {
+//            let settings = NEIPv6Settings(addresses: ["fd6e:a81b:704f:1211::1"], networkPrefixLengths: [64])
+//            settings.includedRoutes = [NEIPv6Route.default()]
+//            return settings
+//        }()
+//        settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1"])
+        settings.dnsSettings = NEDNSSettings(servers: ["101.226.4.6"])
+        settings.proxySettings = {
+            let settings = NEProxySettings();
+            settings.httpServer = NEProxyServer(address: "::1", port: proxyPort)
+            settings.httpsServer = NEProxyServer(address: "::1", port: proxyPort)
+            settings.httpEnabled = true
+            settings.httpsEnabled = true
+            settings.matchDomains = [""]
+            return settings
+        }()
         return settings
     }
 }
@@ -148,6 +181,43 @@ class AppClashClient: NSObject, ClashClientProtocol {
     
     func traffic(_ up: Int64, down: Int64) {
         trafficListener(up, down)
+    }
+}
+
+private func saveTunnelConfigToFile(socksPort: Int) -> URL {
+    //task-stack-size: 20480
+    //task-stack-size: 24576
+    //tcp-buffer-size: 4096 //这个是后加上的
+    //      task-stack-size: 32768
+    //tcp-buffer-size: 8192
+    let content = """
+    tunnel:
+      mtu: 9000
+
+    socks5:
+      port: \(socksPort)
+      address: ::1
+      udp: 'udp'
+
+    misc:
+      task-stack-size: 20480 
+      tcp-buffer-size: 4096
+      connect-timeout: 5000
+      read-write-timeout: 60000
+      log-file: stderr
+      log-level: info
+      limit-nofile: 65535
+    """
+    if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+        let fileURL = documentsDirectory.appendingPathComponent("tunnel_config.yaml")
+        do {
+            try content.write(to: fileURL, atomically: true, encoding: .utf8)
+            return fileURL
+        } catch {
+            fatalError("Error writing to file: \(error)")
+        }
+    } else {
+        fatalError("Error finding the documents directory.")
     }
 }
 

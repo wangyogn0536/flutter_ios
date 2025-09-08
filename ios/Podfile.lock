@@ -1,4 +1,6 @@
 PODS:
+  - clash_flt (0.0.1):
+    - Flutter
   - connectivity_plus (0.0.1):
     - Flutter
   - device_info_plus (0.0.1):
@@ -7,6 +9,8 @@ PODS:
   - flutter_app_update (0.0.1):
     - Flutter
   - flutter_downloader (0.0.1):
+    - Flutter
+  - flutter_icmp_ping (0.0.1):
     - Flutter
   - flutter_keyboard_visibility (0.0.1):
     - Flutter
@@ -20,6 +24,7 @@ PODS:
     - Flutter
   - fluttertoast (0.0.2):
     - Flutter
+    - Toast
   - fluwx (0.0.1):
     - Flutter
     - fluwx/pay (= 0.0.1)
@@ -33,26 +38,31 @@ PODS:
     - Flutter
   - package_info_plus (0.4.5):
     - Flutter
-  - permission_handler_apple (9.3.0):
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - permission_handler_apple (9.1.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - Toast (4.1.1)
   - tobias (0.0.1):
     - Flutter
   - url_launcher_ios (0.0.1):
     - Flutter
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
-    - FlutterMacOS
   - WechatOpenSDK-XCFramework (2.0.5)
 
 DEPENDENCIES:
+  - clash_flt (from `.symlinks/plugins/clash_flt/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - Flutter (from `Flutter`)
   - flutter_app_update (from `.symlinks/plugins/flutter_app_update/ios`)
   - flutter_downloader (from `.symlinks/plugins/flutter_downloader/ios`)
+  - flutter_icmp_ping (from `.symlinks/plugins/flutter_icmp_ping/ios`)
   - flutter_keyboard_visibility (from `.symlinks/plugins/flutter_keyboard_visibility/ios`)
   - flutter_splash_screen (from `.symlinks/plugins/flutter_splash_screen/ios`)
   - flutter_tencent_captcha (from `.symlinks/plugins/flutter_tencent_captcha/ios`)
@@ -63,17 +73,21 @@ DEPENDENCIES:
   - in_app_purchase_storekit (from `.symlinks/plugins/in_app_purchase_storekit/darwin`)
   - open_file_ios (from `.symlinks/plugins/open_file_ios/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - tobias (from `.symlinks/plugins/tobias/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
-  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
+  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/ios`)
 
 SPEC REPOS:
   trunk:
+    - Toast
     - WechatOpenSDK-XCFramework
 
 EXTERNAL SOURCES:
+  clash_flt:
+    :path: ".symlinks/plugins/clash_flt/ios"
   connectivity_plus:
     :path: ".symlinks/plugins/connectivity_plus/ios"
   device_info_plus:
@@ -84,6 +98,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_app_update/ios"
   flutter_downloader:
     :path: ".symlinks/plugins/flutter_downloader/ios"
+  flutter_icmp_ping:
+    :path: ".symlinks/plugins/flutter_icmp_ping/ios"
   flutter_keyboard_visibility:
     :path: ".symlinks/plugins/flutter_keyboard_visibility/ios"
   flutter_splash_screen:
@@ -104,6 +120,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/open_file_ios/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   shared_preferences_foundation:
@@ -113,31 +131,35 @@ EXTERNAL SOURCES:
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   webview_flutter_wkwebview:
-    :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
+    :path: ".symlinks/plugins/webview_flutter_wkwebview/ios"
 
 SPEC CHECKSUMS:
+  clash_flt: cc2b611866cbb29f57efcfad4b7358592b18c70c
   connectivity_plus: 2a701ffec2c0ae28a48cf7540e279787e77c447d
-  device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
+  device_info_plus: 97af1d7e84681a90d0693e63169a5d50e0839a0d
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_app_update: 65f61da626cb111d1b24674abc4b01728d7723bc
   flutter_downloader: b7301ae057deadd4b1650dc7c05375f10ff12c39
+  flutter_icmp_ping: 2b159955eee0c487c766ad83fec224ae35e7c935
   flutter_keyboard_visibility: 0339d06371254c3eb25eeb90ba8d17dca8f9c069
-  flutter_splash_screen: 0323a1080aa7853a0f0af4491dc29d034be61746
+  flutter_splash_screen: a3ee8bcb448d4b2645dbac45add3dabfe51f4471
   flutter_tencent_captcha: 4853c2caa88a285990eb470f26ba7568f26689b4
   flutter_v2ray: 21ee520e013877941e2e67b3b48aed9c6870e8dc
   flutter_vpn: a106f778c4994b07edc78c6a66ca24a7b539bb15
-  fluttertoast: 21eecd6935e7064cc1fcb733a4c5a428f3f24f0f
+  fluttertoast: e9a18c7be5413da53898f660530c56f35edfba9c
   fluwx: 95a2274c23418c1098940bd00dcfe7c975bb0550
-  in_app_purchase_storekit: a1ce04056e23eecc666b086040239da7619cd783
+  in_app_purchase_storekit: 8c3b0b3eb1b0f04efbff401c3de6266d4258d433
   open_file_ios: 461db5853723763573e140de3193656f91990d9e
-  package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
-  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
+  package_info_plus: 58f0028419748fad15bf008b270aaa8e54380b1c
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
+  permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
+  Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
   tobias: 2aded9b83e3663b907360a800d8e3c13284f25c5
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
-  webview_flutter_wkwebview: a4af96a051138e28e29f60101d094683b9f82188
+  webview_flutter_wkwebview: b7e70ef1ddded7e69c796c7390ee74180182971f
   WechatOpenSDK-XCFramework: b072030c9eeee91dfff1856a7846f70f7b9a88ed
 
-PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
+PODFILE CHECKSUM: c0f9c1151151f272dc8ea4d382ebacba5d2e7aee
 
 COCOAPODS: 1.16.2
