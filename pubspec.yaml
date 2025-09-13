@@ -45,8 +45,7 @@ dependencies:
   #苹果端实现的插件
   clash_flt:
     git:
-      url: git@github.com:wangyogn0536/clash_flt.git
-      ref: master   # 或 master，看你 fork 后默认分支
+      url: https://github.com/LondonX/clash_flt
   path_provider: any
   #配置VPN的插件
   flutter_vpn: ^0.12.0
@@ -85,7 +84,7 @@ dependencies:
 
   #  微信相关_支付
   # fluwx: ^3.13.1
-  fluwx: ^5.7.2
+  fluwx: ^5.5.4
 
   #  支付宝支付
   tobias: ^2.4.0

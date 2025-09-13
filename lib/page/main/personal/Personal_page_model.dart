@@ -28,6 +28,19 @@ class PersonalPageModel extends BaseViewModel {
     city10NodeAPI();
   }
 
+  void resetOrderInfo() {
+    iOSOrderNo = '';
+    // 如果有其他本次订单相关字段，也可以在这里一并清空
+    wechatPay = '';
+    alipayPay = '';
+    price = '0.00';
+    oPrice = '0.00';
+    selectCouponText = '暂无可用优惠券';
+    selectCouponList.clear();
+
+    notifyListeners(); // 通知界面刷新
+  }
+
   ///获取带宽数据接口
   // void getDaikuanData() {
   //   HttpManager.requestData(
@@ -143,7 +156,10 @@ class PersonalPageModel extends BaseViewModel {
       'ios': iOSPurchaseData,
       'mode': 'product'
     };
-    IosPayHttpManager.requestData(Url.iOSPurchase, params, success: () {});
+    IosPayHttpManager.requestData(Url.iOSPurchase, params, success: () {
+      // 支付接口回调成功后，重置订单信息  看一下  是否每次购买的时候  会加重新给订单信息赋值
+      resetOrderInfo();
+    });
   }
 
   ///静态节点列表

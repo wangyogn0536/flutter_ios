@@ -44,7 +44,7 @@ class _LoginRegisterBackPageState extends State<LoginRegisterBackPage> {
               children: [
                 Container(
                   height: widget.backDistance.h,
-                  color: const Color.fromARGB(253, 227, 13, 102),
+                  color: MyColor.darkSurfaceColor,
                   child: Stack(
                     children: [
                       Center(

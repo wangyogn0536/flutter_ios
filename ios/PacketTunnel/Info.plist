@@ -14,5 +14,12 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>$(PRODUCT_MODULE_NAME).PacketTunnelProvider</string>
 	</dict>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>audio</string>
+        <string>voip</string>
+        <string>networking</string>
+    </array>
 </dict>
 </plist>

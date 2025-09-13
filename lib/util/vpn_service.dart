@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../page/login_register/login_register_backage_page.dart';
-
 const platformChannel = MethodChannel('your_channel_name');
 
 class AndroidVpnService {

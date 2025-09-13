@@ -52,15 +52,50 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         try await self.setTunnelNetworkSettings(initTunnelSettings(proxyHost: host, proxyPort: port))
         
         // start TUN
+//        Task.init {
+//            let tunConfigFile = saveTunnelConfigToFile(socksPort: socksPort)
+//            do {
+//                let tunConfig = try String(contentsOf: tunConfigFile, encoding: .utf8)
+//                osLog("tunConfig: \(tunConfig)")
+//            }catch{
+//                fatalError("cannot read tunConfigFile")
+//            }
+//        }
+        // 启动 TUN 并 Socks5Tunnel
         Task.init {
             let tunConfigFile = saveTunnelConfigToFile(socksPort: socksPort)
             do {
                 let tunConfig = try String(contentsOf: tunConfigFile, encoding: .utf8)
                 osLog("tunConfig: \(tunConfig)")
-            }catch{
+            } catch {
                 fatalError("cannot read tunConfigFile")
             }
-            osLog("Socks5Tunnel.run: \(Socks5Tunnel.run(withConfig: Socks5Tunnel.Config.file(path: tunConfigFile)))")
+            
+            _ = Socks5Tunnel.run(withConfig: Socks5Tunnel.Config.file(path: tunConfigFile))
+            
+            // 保存当前 VPN IP（手动设置为已知 VPN 配置的地址）
+            let savedIP = vpnIP ?? "" // 这里使用你启动时配置的 VPN IP
+            self.userDefaults?.set(savedIP, forKey: "lastKnownVpnIP")
+            self.userDefaults?.synchronize()
+            
+            // ✅ 长期稳定心跳 + 自动重连（基于保存的 VPN 配置地址）
+            Task.detached { [weak self] in
+                guard let self = self else { return }
+                while true {
+                    try? await Task.sleep(nanoseconds: 300_000_000_000) // 300秒
+                    // 直接比较当前 VPN 配置的地址（或外部已知 VPN IP），不依赖 Socks5Tunnel.stats
+                    let currentConfiguredIP = self.vpnIP ?? ""
+                    let savedIP = self.userDefaults?.string(forKey: "lastKnownVpnIP") ?? ""
+                    if currentConfiguredIP != savedIP {
+                        osLog("VPN 配置地址变化，自动重连...")
+                        let tunConfigFile = saveTunnelConfigToFile(socksPort: socksPort)
+                        _ = Socks5Tunnel.run(withConfig: Socks5Tunnel.Config.file(path: tunConfigFile))
+                        // 更新保存的 VPN IP
+                        self.userDefaults?.set(currentConfiguredIP, forKey: "lastKnownVpnIP")
+                        self.userDefaults?.synchronize()
+                    }
+                }
+            }
         }
     }
     
@@ -142,7 +177,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     
     private func initTunnelSettings(proxyHost: String, proxyPort: Int) -> NEPacketTunnelNetworkSettings {
         let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: vpnIP ?? "254.1.1.1")
-        settings.mtu = 9000
+        settings.mtu = 1450
 //        settings.ipv4Settings = {
 //            let settings = NEIPv4Settings(addresses: ["198.18.0.1"], subnetMasks: ["255.255.0.0"])
 //            settings.includedRoutes = [NEIPv4Route.default()]
@@ -188,20 +223,64 @@ private func saveTunnelConfigToFile(socksPort: Int) -> URL {
     //task-stack-size: 20480
     //task-stack-size: 24576
     //tcp-buffer-size: 4096 //这个是后加上的
-    //      task-stack-size: 32768
+    //task-stack-size: 32768
     //tcp-buffer-size: 8192
+    /**
+          enable: true
+    •    开启 TUN 隧道模式，让 iOS 把 IP 层流量导入 VPN。
+    •    必须开启，否则 VPN 隧道无法接管网络流量。
+    •    udp: true
+    •    支持 UDP 流量转发。
+    •    iOS 视频/游戏应用常用 QUIC/HTTP3，需要 UDP，否则视频刷一会就断开。
+    •    mtu: 1450
+    •    最大传输单元。iOS 支持的最大稳定值约 1450。
+    •    设置过大（如 9000）会导致分片失败，长视频或大流量 TCP/UDP 连接容易断。
+    •    auto-route: true
+    •    自动将设备所有流量通过 VPN 隧道。
+    •    如果设置为 false，需要手动路由，否则部分流量可能直连导致不走 VPN。
+
+    •    port: \(socksPort)
+    •    本地 SOCKS5 代理端口，用于 Tunnel 将流量转发给 Clash Core 或代理服务。
+    •    \(socksPort) 是 Flutter 占位符，会动态替换为实际端口。
+    •    address: ::1
+    •    本地 IPv6 地址（相当于 127.0.0.1）。
+    •    udp: true
+    •    开启 UDP 支持，保证视频流量、QUIC/HTTP3 能通过 SOCKS5 隧道。
+    •    task-stack-size: 32768
+    •    隧道线程堆栈大小（字节）。
+    •    流量大或并发高时，增大堆栈防止线程崩溃。
+    •    tcp-buffer-size: 16384
+    •    TCP 缓冲区大小（字节）。
+    •    视频流量大，缓冲区太小可能导致长连接掉线。
+    •    connect-timeout: 5000
+    •    TCP 连接超时时间（毫秒）。
+    •    超过 5 秒未建立连接就重连。
+    •    read-write-timeout: 60000
+    •    TCP 读写超时时间（毫秒）。
+    •    视频长连接可承受 60 秒延迟，不轻易断开。
+    •    log-file: stderr & log-level: info
+    •    日志输出到标准错误流，方便调试，打印主要信息。
+    •    limit-nofile: 65535
+    •    文件描述符上限。
+    •    流量大或并发多时，保证足够的 socket/文件句柄，避免连接失败。
+
+    */
+  
     let content = """
     tunnel:
-      mtu: 9000
-
+      mtu: 1450
+      auto-route: true
+      enable: true
+      udp: true
     socks5:
       port: \(socksPort)
       address: ::1
-      udp: 'udp'
+      udp: true
+
 
     misc:
-      task-stack-size: 20480 
-      tcp-buffer-size: 4096
+      task-stack-size: 32768 
+      tcp-buffer-size: 16384
       connect-timeout: 5000
       read-write-timeout: 60000
       log-file: stderr
