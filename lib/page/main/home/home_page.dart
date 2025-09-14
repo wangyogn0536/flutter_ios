@@ -1,70 +1,70 @@
-import 'dart:io'; 
+import 'dart:io';
 // Dart 自带的 IO 库，用于文件、网络、目录等操作
 
-import 'package:agent_app_vpn/config/node_config.dart'; 
+import 'package:agent_app_vpn/config/node_config.dart';
 // 项目自定义配置文件，可能存储节点（VPN 服务器）相关配置
 
-import 'package:agent_app_vpn/page/main/home/home_page_model.dart'; 
+import 'package:agent_app_vpn/page/main/home/home_page_model.dart';
 // 首页数据模型，管理首页状态和逻辑
 
-import 'package:agent_app_vpn/page/main/home/renew_server_list/renew_server_list_page.dart'; 
+import 'package:agent_app_vpn/page/main/home/renew_server_list/renew_server_list_page.dart';
 // 续费服务器列表页面
 
-import 'package:agent_app_vpn/page/main/home/server_list/server_list_page.dart'; 
+import 'package:agent_app_vpn/page/main/home/server_list/server_list_page.dart';
 // 服务器列表页面
 
-import 'package:agent_app_vpn/project_imports.dart'; 
+import 'package:agent_app_vpn/project_imports.dart';
 // 项目统一导入文件，可能包括常用工具、常量等
 
-// import 'package:background_fetch/background_fetch.dart'; 
+// import 'package:background_fetch/background_fetch.dart';
 // 后台任务执行插件（注释掉，可能暂时不用）
 
-import 'package:clash_flt/clash_flt.dart'; 
+import 'package:clash_flt/clash_flt.dart';
 // Clash Flutter 插件，用于代理 / VPN 功能的 Flutter 封装
 
-import 'package:clash_flt/clash_state.dart'; 
+import 'package:clash_flt/clash_state.dart';
 // Clash Flutter 状态管理，用于获取和监听代理状态
 
-import 'package:connectivity_plus/connectivity_plus.dart'; 
+import 'package:connectivity_plus/connectivity_plus.dart';
 // 检测网络连接状态，如 WiFi / 移动数据
 
-import 'package:dio/dio.dart'; 
+import 'package:dio/dio.dart';
 // 强大的网络请求库，支持 HTTP 请求、拦截器、下载等
 
-import 'package:flutter_v2ray/model/v2ray_status.dart'; 
+import 'package:flutter_v2ray/model/v2ray_status.dart';
 // V2Ray Flutter 插件的状态模型，用于管理 V2Ray 连接状态
 
-// import 'package:install_plugin/install_plugin.dart'; 
+// import 'package:install_plugin/install_plugin.dart';
 // 安装 APK 插件（注释掉，可能暂时不用）
 
-import 'package:path_provider/path_provider.dart'; 
+import 'package:path_provider/path_provider.dart';
 // 获取系统目录（如文档目录、缓存目录），常用于文件存储
 
-import 'package:url_launcher/url_launcher.dart'; 
+import 'package:url_launcher/url_launcher.dart';
 // 打开外部链接或其他应用（如浏览器、邮件、电话）
 
-import '../../../config/profile_generator.dart'; 
+import '../../../config/profile_generator.dart';
 // 配置文件生成工具，用于生成 VPN / Clash 配置文件
 
-import '../../../data/server_list_bean_entity.dart'; 
+import '../../../data/server_list_bean_entity.dart';
 // 服务器列表数据实体类，用于解析和存储服务器信息
 
-import '../../../util/permission.dart'; 
+import '../../../util/permission.dart';
 // 权限工具类，用于检查和请求权限
 
-import '../../../util/vpn_service.dart'; 
+import '../../../util/vpn_service.dart';
 // VPN 服务工具类，用于管理 VPN 连接
 
 import '../../../util/vpn_heartbeat.dart';
-import '../../login_register/login/login_page.dart'; 
+import '../../login_register/login/login_page.dart';
 // 登录页面
 
-import '../personal/personal_page.dart'; 
+import '../personal/personal_page.dart';
 // 个人中心页面
 
-import '../purchase_center/help_center/help_center_page.dart'; 
+import '../purchase_center/help_center/help_center_page.dart';
 
-
+import 'package:flutter/services.dart';
 
 // 帮助中心页面
 /// Created by 刘冰.
@@ -514,12 +514,12 @@ class HomePageState extends BaseState<HomePageModel, HomePage>
                                       return;
                                     }
                                     if (isConnected) {
-                                      ClashFlt.instance.stopClash();//断开VPN
+                                      ClashFlt.instance.stopClash(); //断开VPN
                                       isVpn = false;
                                     } else {
                                       isVpn = true;
                                       await ClashFlt.instance.resolveProfile();
-                                      ClashFlt.instance.startClash();//连接vpn
+                                      ClashFlt.instance.startClash(); //连接vpn
                                     }
                                   },
                                   child: Column(
