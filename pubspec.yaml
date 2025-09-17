@@ -37,19 +37,19 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   #安卓端实现的插件
-#  flutter_v2ray:
-#    git:
-#      url: https://github.com/H3mnz/flutter_v2ray
-#  vpn_info: ^0.0.3
+  # flutter_v2ray:
+  #  git:
+  #    url: https://github.com/H3mnz/flutter_v2ray
+  # vpn_info: ^0.0.3
 
   #苹果端实现的插件
   clash_flt:
     git:
-      url: https://github.com/LondonX/clash_flt
+      url: git@github.com:wangyogn0536/clash_flt.git
   path_provider: any
   #配置VPN的插件
   flutter_vpn: ^0.12.0
-  flutter_v2ray: ^1.0.10
+  flutter_v2ray: ^1.0.10 # 这个就是安卓的上面删掉的依赖
   #自适应屏幕适配插件
   flutter_screenutil: ^5.9.0
   # 用于显示隐藏 flutter 的 splash screen

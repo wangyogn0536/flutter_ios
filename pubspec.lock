@@ -78,10 +78,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: f3384845ff2c6282d51f3d1c7b131cc9379d32d6
-      url: "https://github.com/LondonX/clash_flt"
+      resolved-ref: "3813f62f3b9dddf9c11ad1ba70fe6740461789ad"
+      url: "git@github.com:wangyogn0536/clash_flt.git"
     source: git
-    version: "1.0.1+1010"
+    version: "1.0.0"
   clipboard:
     dependency: "direct main"
     description:

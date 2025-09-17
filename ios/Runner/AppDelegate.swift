@@ -31,7 +31,7 @@ import NetworkExtension
       // 配置 TunnelProvider 指向 PacketTunnel
       let tunnelProtocol = NETunnelProviderProtocol()
       tunnelProtocol.providerBundleIdentifier = "com.zhongqi.app.agent.PacketTunnel" // 替换成你的 PacketTunnel.appex bundle id
-      tunnelProtocol.serverAddress = "127.0.0.1" // 可填任意占位
+      tunnelProtocol.serverAddress = "127.0.0.0" // 可填任意占位
       tunnelProtocol.username = "" // 可选
       tunnelProtocol.passwordReference = nil // 可选
 

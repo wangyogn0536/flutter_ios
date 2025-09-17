@@ -38,6 +38,7 @@ class ConfigString {
   static const String homePageText = '首页';
   static const String personalText = '购买';
   static const String purchaseCenterText = '我的';
+  static const String shopingCardText = '购物车';
 
   static const String text5M = '5M';
   static const String text10M = '10M';

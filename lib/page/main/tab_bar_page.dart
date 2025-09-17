@@ -78,6 +78,8 @@ class _TabBarPageState extends State<TabBarPage> {
       ),
       _bottomItem(ConfigString.purchaseCenterText, 'images/mine_icon.png',
           'images/select_mine_icon.png'),
+      _bottomItem(ConfigString.shopingCardText, 'images/home_page_icon.png',
+          'images/select_home_page_icon.png')
     ];
   }
 
